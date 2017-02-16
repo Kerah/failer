@@ -7,8 +7,15 @@ import (
 
 const (
 	ErrCodeDecodeFail uint32 = 1
-	ErrCodeEncodeFail = 2
 )
+
+type Encoder interface {
+	Encode() ([]byte)
+}
+
+type Decoder interface {
+	Decode([]byte) Fail
+}
 
 var emptyString = ""
 
@@ -19,8 +26,11 @@ type Fail interface {
 	Tag() string
 	Stack() string
 
-	Decode([]byte) Fail
-	Encode() ([]byte, Fail)
+	Encoder
+	Decoder
+
+
+
 }
 
 type fail struct {
@@ -60,7 +70,7 @@ func (f *fail) Decode(data []byte) Fail {
 	return nil
 }
 
-func (f *fail) Encode() ([]byte, Fail) {
+func (f *fail) Encode() ([]byte) {
 	result := make([]byte, 12)
 	binary.BigEndian.PutUint32(result[:4], f.code)
 	binary.BigEndian.PutUint16(result[4:6], uint16(len(f.message)))
@@ -79,7 +89,7 @@ func (f *fail) Encode() ([]byte, Fail) {
 		result = append(result, []byte(f.stack)...)
 	}
 
-	return result, nil
+	return result
 }
 
 func (f *fail) Message() string {

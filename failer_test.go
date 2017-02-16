@@ -14,8 +14,7 @@ func TestFail(t *testing.T) {
 	f := WithTag("assert", "test", code)
 	f.(*fail).stack = "stack"
 
-	data, err := f.Encode()
-	req.NoError(err)
+	data := f.Encode()
 	req.NotEmpty(data)
 
 	ass.Len(data, 27)
